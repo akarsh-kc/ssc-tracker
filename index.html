@@ -1226,15 +1226,19 @@ function caShowError(msg){
 async function caFetchNews(){
   const key = encodeURIComponent(caConfig.gnewsKey);
   const mk = cat => `https://gnews.io/api/v4/top-headlines?category=${cat}&lang=en&country=in&max=10&apikey=${key}`;
-  const [nationRes, worldRes] = await Promise.all([
-    fetch(mk('nation')), fetch(mk('world'))
-  ]);
-  if(!nationRes.ok && !worldRes.ok) throw new Error('GNews request failed — check your API key and daily quota.');
-  const [nationData, worldData] = await Promise.all([
-    nationRes.ok ? nationRes.json() : {articles:[]},
-    worldRes.ok ? worldRes.json() : {articles:[]}
-  ]);
-  const all = [...(nationData.articles||[]), ...(worldData.articles||[])];
+  const results = await Promise.allSettled([ fetch(mk('nation')), fetch(mk('world')) ]);
+  const ok = results.filter(r => r.status==='fulfilled' && r.value.ok).map(r => r.value);
+  if(!ok.length){
+    const networkFailed = results.some(r => r.status==='rejected');
+    if(networkFailed){
+      throw new Error("Couldn't reach GNews (gnews.io) — check your internet connection, or that it isn't blocked by an ad blocker, private DNS, or firewall on this device.");
+    }
+    const failed = results.find(r => r.status==='fulfilled');
+    const status = failed ? failed.value.status : '?';
+    throw new Error(`GNews request failed (status ${status}) — check your API key and daily quota.`);
+  }
+  const datas = await Promise.all(ok.map(r => r.json()));
+  const all = datas.flatMap(d => d.articles || []);
   const seen = new Set();
   const dedup = [];
   all.forEach(a=>{
@@ -1274,17 +1278,24 @@ ${listText}`;
 
   const model = caConfig.geminiModel || 'gemini-3.7-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(caConfig.geminiKey)}`;
-  const res = await fetch(url, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      contents:[{ parts:[{ text:prompt }] }],
-      generationConfig:{ responseMimeType:'application/json' }
-    })
-  });
+  let res;
+  try{
+    res = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        contents:[{ parts:[{ text:prompt }] }],
+        generationConfig:{ responseMimeType:'application/json' }
+      })
+    });
+  }catch(networkErr){
+    throw new Error("Couldn't reach Gemini's API (generativelanguage.googleapis.com) — check your internet connection, or that it isn't blocked by an ad blocker, private DNS, or firewall on this device.");
+  }
   if(!res.ok){
     const errBody = await res.text().catch(()=> '');
-    throw new Error(`Gemini request failed (${res.status}). Check your API key / model name.`);
+    let detail = '';
+    try{ detail = JSON.parse(errBody).error.message; }catch(e){}
+    throw new Error(`Gemini request failed (status ${res.status})${detail ? ': '+detail : ' — check your API key / model name.'}`);
   }
   const data = await res.json();
   const text = data && data.candidates && data.candidates[0] && data.candidates[0].content
