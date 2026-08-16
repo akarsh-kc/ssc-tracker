@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>SSC Planner</title>
+<meta name="description" content="SSC Planner is an offline-first, installable study planner — daily tasks, subject-wise mock tracking, and notes, all saved locally on your device.">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SSC Planner">
+
+<!-- ================= PWA metadata ================= -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000000;
+  --panel:#0a0a0c;
+  --panel-2:#0e0e11;
+  --border:#1a1a1e;
+  --accent:#3b82f6;
+  --accent-2:#60a5fa;
+  --accent-3:#7dd3fc;
+  --accent-glow:59,130,246;
+  --good:var(--accent);
+  --text:#f4f4f6;
+  --text-dim:#96969f;
+  --text-dim2:#5c5c66;
+  --radius-lg:30px;
+  --radius-md:20px;
+  --radius-sm:14px;
+  --radius-pill:999px;
+  --glass-fill:rgba(255,255,255,.075);
+  --glass-fill-strong:rgba(255,255,255,.13);
+  --glass-fill-strongest:rgba(255,255,255,.19);
+  --glass-stroke:rgba(255,255,255,.16);
+  --glass-blur:18px;
+  --glass-shadow:0 20px 50px -14px rgba(0,0,0,.65), 0 2px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.25), inset 0 34px 44px -30px rgba(255,255,255,.10);
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --smooth:cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none;}
+body{position:fixed;inset:0;overflow:hidden;}
+button,input,textarea{font-family:inherit;color:inherit;}
+button{cursor:pointer;-webkit-appearance:none;appearance:none;transition:transform .18s var(--spring), background .2s var(--smooth), opacity .2s;}
+button:active{transform:scale(.94);}
+input,textarea{-webkit-appearance:none;appearance:none;outline:none;}
+::-webkit-scrollbar{width:0;height:0;}
+.card{transition:background .25s var(--smooth), border-color .25s var(--smooth), transform .25s var(--spring);}
+
+/* ---- ambient background glow, subject-tinted ---- */
+#glow{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(60% 40% at 15% 0%, color-mix(in srgb, var(--tint,var(--accent)) 22%, transparent), transparent 70%),
+    radial-gradient(50% 35% at 100% 10%, rgba(255,255,255,.04), transparent 70%);
+  transition:background 0.6s ease;}
+
+/* ---- ambient OLED-black background (drifting glow blobs, no photo — Waveform-style idle finish) ---- */
+#ambientBg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:var(--bg);}
+#ambientBg .blob{position:absolute;border-radius:50%;filter:blur(150px) saturate(130%);will-change:transform;
+  transition:background 1s ease,opacity 1s ease;}
+#ambientBg .blob.b1{width:70vw;height:70vw;top:-26%;left:-16%;background:var(--amb1,#0d0d10);opacity:.5;
+  animation:driftA 24s ease-in-out infinite alternate;}
+#ambientBg .blob.b2{width:56vw;height:56vw;bottom:-28%;right:-12%;background:var(--amb2,#0a0a0c);opacity:.4;
+  animation:driftB 28s ease-in-out infinite alternate;}
+#ambientBg .blob.b3{width:42vw;height:42vw;top:38%;left:36%;background:var(--amb3,#0d0d10);opacity:.3;
+  animation:driftC 32s ease-in-out infinite alternate;}
+@keyframes driftA{from{transform:translate(0,0) scale(1);}to{transform:translate(6%,8%) scale(1.12);}}
+@keyframes driftB{from{transform:translate(0,0) scale(1);}to{transform:translate(-8%,-6%) scale(1.15);}}
+@keyframes driftC{from{transform:translate(0,0) scale(1);}to{transform:translate(-5%,7%) scale(1.08);}}
+@media (prefers-reduced-motion:reduce){
+  #ambientBg .blob{animation:none;}
+}
+#bgGrain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+/* ---- theme switcher ---- */
+#themeBtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--glass-stroke);
+  background:var(--glass-fill-strong);backdrop-filter:blur(var(--glass-blur));
+  display:flex;align-items:center;justify-content:center;color:var(--text);}
+#themePop{position:fixed;top:calc(var(--safe-t) + 60px);right:20px;z-index:60;padding:8px;
+  border-radius:var(--radius-md);background:var(--glass-fill-strongest);border:1px solid var(--glass-stroke);
+  backdrop-filter:blur(var(--glass-blur));box-shadow:var(--glass-shadow);display:none;flex-direction:column;gap:2px;
+  min-width:150px;}
+#themePop.open{display:flex;}
+.themeopt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;border:none;
+  background:transparent;color:var(--text-dim);width:100%;text-align:left;}
+.themeopt:active{background:var(--glass-fill);}
+.themeopt.active{background:var(--glass-fill-strong);color:var(--text);}
+.swatch{width:32px;height:32px;border-radius:50%;border:2px solid transparent;position:relative;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 2px rgba(255,255,255,.35), inset 0 -3px 6px rgba(0,0,0,.35);}
+.themeopt.active .swatch{border-color:#fff;}
+.swatch .dotcheck{opacity:0;color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));}
+.themeopt.active .swatch .dotcheck{opacity:1;}
+.themeopt .tlabel{font-size:13.5px;font-weight:700;}
+
+/* ---- top bar ---- */
+#topbar{position:fixed;top:0;left:0;right:0;z-index:40;padding:calc(var(--safe-t) + 14px) 20px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,0));backdrop-filter:blur(2px);}
+#topbar .title{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+#topbar .sub{font-size:12px;color:var(--text-dim);font-weight:500;margin-top:2px;}
+.brandrow{display:flex;align-items:center;gap:11px;}
+.applogo{width:34px;height:34px;flex:0 0 auto;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(150deg, var(--accent), var(--accent-3));
+  box-shadow:0 6px 16px -6px rgba(var(--accent-glow),.6), inset 0 1px 0 rgba(255,255,255,.3);}
+
+/* ---- scroll area ---- */
+#scroller{position:absolute;inset:0;overflow-y:auto;padding:calc(var(--safe-t) + 78px) 16px calc(var(--safe-b) + 118px);
+  -webkit-overflow-scrolling:touch;z-index:3;}
+.view{position:absolute;inset:0;opacity:0;pointer-events:none;}
+.view.active{position:relative;opacity:1;pointer-events:auto;animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+/* ---- glass card base ---- */
+.card{background:var(--glass-fill);border:1px solid var(--glass-stroke);border-radius:var(--radius-lg);
+  backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
+  box-shadow:var(--glass-shadow);
+  transform:translateZ(0);will-change:backdrop-filter;isolation:isolate;}
+
+/* ---- chip row (date toggle / subject select) ---- */
+.chiprow{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;margin-bottom:14px;}
+.chip{flex:0 0 auto;padding:10px 16px;border-radius:var(--radius-pill);border:1px solid var(--glass-stroke);
+  background:var(--glass-fill);color:var(--text-dim);font-size:13.5px;font-weight:600;
+  display:flex;align-items:center;gap:7px;white-space:nowrap;transition:all .25s var(--spring);}
+.chip.active{background:color-mix(in srgb, var(--chip-c,var(--accent)) 35%, var(--glass-fill-strongest));
+  color:var(--text);border-color:color-mix(in srgb, var(--chip-c,var(--accent)) 65%, var(--glass-stroke));
+  backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--chip-c,var(--accent));}
+.chip.active .dot{background:var(--chip-c,#000);}
+
+/* ---- section label ---- */
+.seclabel{font-size:12px;font-weight:700;color:var(--text-dim);text-transform:uppercase;
+  letter-spacing:.07em;margin:22px 4px 10px;display:flex;align-items:center;justify-content:space-between;}
+.seclabel span.count{color:var(--text-dim2);font-weight:600;text-transform:none;letter-spacing:0;}
+
+/* ---- greeting header (avatar + welcome back) ---- */
+.greetcard{display:flex;align-items:center;gap:12px;padding:6px 4px 16px;}
+.avatarwrap{position:relative;width:42px;height:42px;flex:0 0 auto;}
+.avatarring{position:absolute;inset:-5px;width:52px;height:52px;transform:rotate(-90deg);}
+.avatarring circle{fill:none;stroke-width:2.5;}
+.avatarring .track{stroke:rgba(255,255,255,.14);}
+.avatarring .fill{stroke:var(--accent-3);stroke-linecap:round;
+  stroke-dashoffset:119.4;transition:stroke-dashoffset .6s var(--smooth), stroke .5s ease;}
+.avatar{width:42px;height:42px;border-radius:50%;position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:800;color:#fff;
+  background:linear-gradient(150deg, var(--accent), var(--accent-3));
+  box-shadow:0 8px 18px -8px rgba(var(--accent-glow),.55);}
+.greetsub{font-size:12px;color:var(--text-dim);font-weight:600;display:flex;align-items:center;gap:6px;}
+.greetname{font-size:17px;font-weight:800;margin-top:1px;}
+.streakbadge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px 3px 7px;border-radius:var(--radius-pill);
+  background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 30%, var(--glass-fill-strong)), var(--glass-fill));
+  border:1px solid color-mix(in srgb, var(--accent) 45%, var(--glass-stroke));color:var(--accent-3);
+  font-size:11px;font-weight:800;backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 4px 14px -6px rgba(var(--accent-glow),.5);}
+.streakbadge svg{width:11px;height:11px;filter:drop-shadow(0 0 4px rgba(var(--accent-glow),.6));}
+.streakbadge.hidden{display:none;}
+
+/* ---- dashboard stat card (progress bar w/ dot, min/max labels) ---- */
+.statcard{padding:18px;margin-bottom:4px;}
+.statcard .srow{display:flex;align-items:flex-start;justify-content:space-between;}
+.staticon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:var(--glass-fill-strong);color:var(--accent-3);}
+.statexpand{width:26px;height:26px;border-radius:50%;background:var(--glass-fill-strong);
+  display:flex;align-items:center;justify-content:center;color:var(--text-dim);}
+.statlabel{font-size:12px;color:var(--text-dim);font-weight:600;margin-top:14px;}
+.statvalue{font-size:21px;font-weight:800;margin-top:2px;}
+.statbar{position:relative;height:4px;border-radius:2px;background:var(--glass-fill-strong);margin-top:16px;}
+.statbar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:2px;
+  background:linear-gradient(90deg,#38bdf8,#93c5fd);
+  box-shadow:0 0 10px rgba(56,189,248,.55);
+  transition:width .5s var(--smooth);}
+.statbar .dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:#fff;
+  transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(0,0,0,.5);transition:left .5s var(--smooth);}
+.statrange{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim2);margin-top:8px;}
+
+/* ---- iOS-style toggle switch ---- */
+.toggle{position:relative;width:48px;height:29px;flex:0 0 auto;border-radius:var(--radius-pill);
+  background:rgba(255,255,255,.14);border:1px solid var(--glass-stroke);transition:background .25s var(--smooth);}
+.toggle .knob{position:absolute;top:2px;left:2px;width:23px;height:23px;border-radius:50%;background:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.35);transition:left .25s var(--spring);}
+.toggle.on{background:var(--accent);border-color:var(--accent);}
+.toggle.on .knob{left:21px;}
+
+/* ---- settings row (label + sublabel + toggle), like Night mode row ---- */
+.settingrow{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;margin-bottom:4px;}
+.settingrow .stitle{font-size:14.5px;font-weight:700;}
+.settingrow .ssub{font-size:12px;color:var(--text-dim);margin-top:2px;}
+.settingtime{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.settingtime input[type=time]{background:var(--glass-fill-strong);border:1px solid var(--glass-stroke);
+  border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-size:13px;color-scheme:dark;}
+
+/* ---- add bar (input pill + button) ---- */
+.addbar{display:flex;gap:10px;margin:14px 2px 4px;}
+.addbar input{flex:1;padding:14px 16px;border-radius:var(--radius-pill);border:1px solid var(--glass-stroke);
+  background:var(--glass-fill);color:var(--text);font-size:15px;}
+.addbar input::placeholder{color:var(--text-dim2);}
+.addbtn{width:48px;height:48px;flex:0 0 auto;border-radius:50%;
+  border:1px solid color-mix(in srgb, var(--accent) 55%, var(--glass-stroke));
+  background:color-mix(in srgb, var(--accent) 30%, var(--glass-fill-strong));
+  backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
+  color:var(--accent-3);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 20px -8px color-mix(in srgb, var(--accent) 55%, transparent), inset 0 1px 0 rgba(255,255,255,.2);
+  transform:translateZ(0);transition:transform .18s var(--spring), background .2s var(--smooth);}
+.addbtn:active{transform:scale(.92);}
+
+/* ---- task item ---- */
+.task{display:flex;align-items:flex-start;gap:12px;padding:14px 14px;border-radius:var(--radius-md);
+  margin-bottom:8px;background:var(--glass-fill);border:1px solid var(--glass-stroke);transition:all .2s ease;}
+.task.done{opacity:.5;}
+.check{width:24px;height:24px;flex:0 0 auto;border-radius:50%;border:1.5px solid var(--glass-stroke);
+  display:flex;align-items:center;justify-content:center;margin-top:1px;background:rgba(255,255,255,.03);}
+.task.done .check{background:var(--good);border-color:var(--good);}
+.tasktext{flex:1;font-size:15px;line-height:1.4;word-break:break-word;}
+.task.done .tasktext{text-decoration:line-through;color:var(--text-dim);}
+.taskmeta{font-size:11.5px;color:var(--text-dim2);margin-top:3px;}
+.delx{width:26px;height:26px;flex:0 0 auto;border:none;background:transparent;color:var(--text-dim2);
+  display:flex;align-items:center;justify-content:center;border-radius:50%;}
+.delx:active{background:var(--glass-fill-strong);color:var(--accent-2);}
+
+/* ---- empty state ---- */
+.empty{padding:40px 20px;text-align:center;color:var(--text-dim2);}
+.empty .big{font-size:34px;margin-bottom:8px;}
+.empty .msg{font-size:14px;color:var(--text-dim);}
+
+/* ---- study subject hero ---- */
+.subjhero{padding:20px;margin-bottom:2px;}
+.subjhero .row1{display:flex;align-items:center;gap:12px;}
+.subjicon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:21px;background:linear-gradient(150deg, var(--chip-c,var(--accent)), color-mix(in srgb, var(--chip-c,var(--accent)) 60%, #000));
+  box-shadow:0 8px 18px -8px color-mix(in srgb, var(--chip-c,var(--accent)) 60%, transparent);}
+.subjname{font-size:19px;font-weight:800;}
+.subjcount{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+.mockrow{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;
+  border-top:1px solid var(--glass-stroke);}
+.mocklabel{font-size:12.5px;color:var(--text-dim);font-weight:600;}
+.mockdate{display:flex;align-items:center;gap:8px;}
+.mockdate input[type=date]{background:transparent;border:none;color:var(--text);font-size:13.5px;
+  font-weight:700;color-scheme:dark;}
+.mockdays{font-size:11.5px;padding:4px 9px;border-radius:var(--radius-pill);font-weight:700;
+  background:var(--glass-fill-strong);color:var(--accent-3);}
+.mockdays.urgent{background:color-mix(in srgb, var(--accent) 25%, transparent);color:var(--accent-2);}
+
+/* ---- reminder banner (before you start) ---- */
+.remindbox{padding:16px 18px;border-radius:var(--radius-md);margin-bottom:4px;
+  background:linear-gradient(135deg, color-mix(in srgb, var(--chip-c,var(--accent)) 18%, var(--glass-fill)), var(--glass-fill));
+  border:1px solid color-mix(in srgb, var(--chip-c,var(--accent)) 35%, var(--glass-stroke));}
+.remindbox .lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--chip-c,var(--accent-3));margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.remindbox textarea{width:100%;background:transparent;border:none;color:var(--text);font-size:14.5px;
+  line-height:1.45;resize:none;min-height:20px;padding:0;font-family:inherit;}
+.remindbox textarea::placeholder{color:var(--text-dim2);}
+
+/* ---- filter pills for study tasks ---- */
+.subfilter{display:flex;gap:6px;margin:16px 2px 10px;}
+.subfilter button{flex:1;padding:9px 0;border-radius:var(--radius-pill);border:1px solid var(--glass-stroke);
+  background:var(--glass-fill);color:var(--text-dim);font-size:12.5px;font-weight:700;}
+.subfilter button.active{background:var(--glass-fill-strongest);color:var(--text);}
+
+/* ---- history ---- */
+.histday{margin-bottom:14px;}
+.histday .d{font-size:12px;font-weight:700;color:var(--text-dim);margin:0 4px 6px;}
+.histitem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);
+  background:var(--glass-fill);margin-bottom:6px;font-size:13.5px;color:var(--text-dim);}
+.histitem .tag{width:6px;height:6px;border-radius:50%;flex:0 0 auto;background:var(--chip-c,var(--accent));}
+.histitem s{color:var(--text-dim2);}
+
+/* ---- notes ---- */
+.notecompose{padding:16px;margin-bottom:16px;}
+.notecompose textarea{width:100%;background:transparent;border:none;color:var(--text);font-size:15px;
+  line-height:1.4;resize:none;min-height:44px;padding:0;font-family:inherit;margin-bottom:12px;}
+.notecompose textarea::placeholder{color:var(--text-dim2);}
+.notetype{display:flex;gap:8px;margin-bottom:10px;}
+.typebtn{flex:1;padding:10px 0;border-radius:var(--radius-sm);border:1px solid var(--glass-stroke);
+  background:var(--glass-fill);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
+  color:var(--text-dim);font-size:12.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s var(--smooth);}
+.typebtn.active{background:color-mix(in srgb, var(--accent) 32%, var(--glass-fill-strongest));
+  color:var(--text);border-color:color-mix(in srgb, var(--accent) 60%, var(--glass-stroke));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);}
+.schedrow{display:flex;gap:8px;margin-bottom:12px;}
+.schedrow input{flex:1;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--glass-stroke);
+  background:var(--glass-fill-strong);color:var(--text);font-size:13.5px;color-scheme:dark;}
+.notesavebtn{width:100%;padding:13px 0;border-radius:var(--radius-pill);border:none;background:var(--accent);
+  color:#fff;font-size:14.5px;font-weight:700;}
+.notesavebtn:active{transform:scale(.98);}
+
+.noteitem{padding:14px 16px;border-radius:var(--radius-md);margin-bottom:9px;background:var(--glass-fill);
+  border:1px solid var(--glass-stroke);}
+.noteitem.pinned{border-color:color-mix(in srgb, var(--accent-3) 40%, var(--glass-stroke));
+  background:linear-gradient(135deg, color-mix(in srgb, var(--accent-3) 12%, var(--glass-fill)), var(--glass-fill));}
+.noteitem.overdue{border-color:color-mix(in srgb, var(--accent) 45%, var(--glass-stroke));}
+.noterow{display:flex;align-items:flex-start;gap:10px;}
+.notetxt{flex:1;font-size:14.5px;line-height:1.42;word-break:break-word;}
+.noteitem.done .notetxt{text-decoration:line-through;color:var(--text-dim);}
+.notebadges{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:var(--radius-pill);
+  background:var(--glass-fill-strong);color:var(--text-dim);display:flex;align-items:center;gap:5px;}
+.badge.pin{color:var(--accent-3);}
+.badge.overdue{color:var(--accent-2);}
+.noteactions{display:flex;gap:6px;flex:0 0 auto;}
+.nbtn{width:26px;height:26px;border:none;background:transparent;color:var(--text-dim2);
+  display:flex;align-items:center;justify-content:center;border-radius:50%;}
+.nbtn:active{background:var(--glass-fill-strong);}
+
+/* ---- bottom nav (Waveform playerbar-style glass shade) ---- */
+#nav{position:fixed;left:14px;right:14px;bottom:calc(var(--safe-b) + 14px);z-index:50;
+  padding:8px;border-radius:var(--radius-lg);
+  background:linear-gradient(180deg, var(--glass-fill-strong), var(--glass-fill) 60%, rgba(255,255,255,.02));
+  border:1px solid var(--glass-stroke);backdrop-filter:blur(34px) saturate(180%);
+  -webkit-backdrop-filter:blur(34px) saturate(180%);
+  box-shadow:var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,.14);
+  display:flex;gap:4px;}
+#nav::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0) 40%);}
+.navbtn{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 7px;
+  border:none;background:transparent;color:var(--text-dim2);border-radius:var(--radius-md);
+  transition:all .2s ease;}
+.navbtn.active{background:color-mix(in srgb, var(--accent) 22%, var(--glass-fill-strongest));color:var(--text);}
+.navbtn svg{width:22px;height:22px;}
+.navbtn .lbl{font-size:10.5px;font-weight:700;}
+
+/* dialog for edit prompts */
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<div id="ambientBg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div id="bgGrain"></div>
+<div id="glow"></div>
+
+<div id="themePop">
+  <button class="themeopt" data-theme="graphite">
+    <span class="swatch" style="background:linear-gradient(135deg,#2b2f36,#6b7280 60%,#e6e9ef);">
+      <svg class="dotcheck" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </span>
+    <span class="tlabel">Graphite</span>
+  </button>
+  <button class="themeopt" data-theme="blue">
+    <span class="swatch" style="background:linear-gradient(135deg,#03142e,#0c4fc4 55%,#7dd3fc);">
+      <svg class="dotcheck" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </span>
+    <span class="tlabel">Blue</span>
+  </button>
+</div>
+
+<div id="topbar">
+  <div class="brandrow">
+    <div class="applogo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4.5 4.5L19 7"/></svg>
+    </div>
+    <div>
+      <div class="title" id="topTitle">Today</div>
+      <div class="sub" id="topSub">—</div>
+    </div>
+  </div>
+  <button id="themeBtn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5Z"/></svg>
+  </button>
+</div>
+
+<div id="scroller">
+
+  <!-- ================= TODAY ================= -->
+  <div class="view active" id="view-today">
+    <div class="greetcard">
+      <div class="avatarwrap">
+        <svg class="avatarring" viewBox="0 0 44 44">
+          <circle class="track" cx="22" cy="22" r="19"/>
+          <circle class="fill" id="avatarRingFill" cx="22" cy="22" r="19"/>
+        </svg>
+        <div class="avatar" id="avatarInitials">AK</div>
+      </div>
+      <div>
+        <div class="greetsub"><span id="greetSub">Good morning</span><span class="streakbadge hidden" id="streakBadge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-2 4-2 7a3 3 0 0 0 6 0c1.5 1.5 2 3.5 2 5a6 6 0 1 1-12 0c0-4 3-6 3-9 0-1 1-2 3-3Z"/></svg><span id="streakCount">0</span></span></div>
+        <div class="greetname">Let's plan today</div>
+      </div>
+    </div>
+
+    <div class="chiprow">
+      <button class="chip active" data-offset="0" id="chip-today">Today</button>
+      <button class="chip" data-offset="1" id="chip-tomorrow">Tomorrow</button>
+    </div>
+
+    <div class="card statcard">
+      <div class="srow">
+        <div class="staticon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 15 2 2 4-4"/><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v4M16 3v4"/></svg>
+        </div>
+        <div class="statexpand">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        </div>
+      </div>
+      <div class="statlabel">Tasks progress</div>
+      <div class="statvalue" id="statValue">0 of 0 done</div>
+      <div class="statbar"><div class="fill" id="statFill" style="width:0%"></div><div class="dot" id="statDot" style="left:0%"></div></div>
+      <div class="statrange"><span>0</span><span id="statMax">0</span></div>
+    </div>
+
+    <div class="card settingrow" style="flex-direction:column;align-items:stretch;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div class="stitle">Evening planning nudge</div>
+          <div class="ssub">Reminds you to plan tomorrow</div>
+        </div>
+        <button class="toggle" id="eveningToggle"><div class="knob"></div></button>
+      </div>
+      <div class="settingtime" id="eveningTimeRow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-dim)"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <input type="time" id="eveningTimeInput" value="21:00">
+      </div>
+    </div>
+
+    <div class="addbar">
+      <input id="todayInput" type="text" placeholder="Add a task…" maxlength="140">
+      <button class="addbtn" id="todayAddBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+
+    <div id="todayList" style="margin-top:14px;"></div>
+  </div>
+
+  <!-- ================= STUDY ================= -->
+  <div class="view" id="view-study">
+    <div class="chiprow" id="subjectChips"></div>
+
+    <div class="card subjhero" id="subjHero"></div>
+
+    <div class="card remindbox" style="margin-top:14px;" id="remindBox">
+      <div class="lbl">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Before you start
+      </div>
+      <textarea id="remindInput" placeholder="e.g. Revise formulas & past mistakes before starting…" rows="1"></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--glass-stroke);">
+        <div>
+          <div class="stitle" style="font-size:13px;">Notify before starting</div>
+          <div class="ssub">Daily nudge with this reminder</div>
+        </div>
+        <button class="toggle" id="subjNotifyToggle"><div class="knob"></div></button>
+      </div>
+      <div class="settingtime" id="subjNotifyTimeRow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-dim)"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <input type="time" id="subjNotifyTimeInput">
+      </div>
+    </div>
+
+    <div class="addbar">
+      <input id="studyInput" type="text" placeholder="Add a topic to cover…" maxlength="140">
+      <button class="addbtn" id="studyAddBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+
+    <div class="subfilter">
+      <button class="active" data-f="pending" id="filt-pending">Pending</button>
+      <button data-f="done" id="filt-done">Resolved</button>
+    </div>
+
+    <div id="studyList"></div>
+
+    <div class="seclabel">Last 7 days <span class="count" id="histCount"></span></div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- ================= NOTES ================= -->
+  <div class="view" id="view-notes">
+    <div class="card notecompose">
+      <textarea id="noteInput" placeholder="Write a note or reminder…" rows="2"></textarea>
+      <div class="notetype">
+        <button class="typebtn active" data-t="permanent" id="type-permanent">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3-1-6Z"/></svg>
+          Permanent
+        </button>
+        <button class="typebtn" data-t="scheduled" id="type-scheduled">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          Remind me at…
+        </button>
+      </div>
+      <div class="schedrow hidden" id="schedRow">
+        <input type="date" id="noteDate">
+        <input type="time" id="noteTime">
+      </div>
+      <button class="notesavebtn" id="noteSaveBtn">Add note</button>
+    </div>
+
+    <div class="seclabel">All notes <span class="count" id="noteCount"></span></div>
+    <div id="notesList"></div>
+  </div>
+
+</div>
+
+<div id="nav">
+  <button class="navbtn active" data-view="today" id="nav-today">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="m9 15 2 2 4-4"/></svg>
+    <span class="lbl">Today</span>
+  </button>
+  <button class="navbtn" data-view="study" id="nav-study">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+    <span class="lbl">Study</span>
+  </button>
+  <button class="navbtn" data-view="notes" id="nav-notes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M15 3v6h6"/><path d="M9 13h6M9 17h4"/></svg>
+    <span class="lbl">Notes</span>
+  </button>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- storage helpers ---------------- */
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v===null? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const pad = n => String(n).padStart(2,'0');
+const dateStr = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayD = () => new Date();
+function addDays(d,n){ const c=new Date(d); c.setDate(c.getDate()+n); return c; }
+function fmtNice(dstr){
+  if(!dstr) return '';
+  const [y,m,d] = dstr.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  return dt.toLocaleDateString(undefined,{weekday:'short', day:'numeric', month:'short'});
+}
+function fmtTime(t){
+  if(!t) return '';
+  let [h,m] = t.split(':').map(Number);
+  const ap = h>=12?'PM':'AM';
+  h = h%12; if(h===0) h=12;
+  return `${h}:${pad(m)} ${ap}`;
+}
+
+/* ---------------- subjects config ---------------- */
+const SUBJECTS = [
+  { id:'qa', name:'Quant (QA)', icon:'🧮', color:'#3b82f6' },
+  { id:'english', name:'English', icon:'🔤', color:'#60a5fa' },
+  { id:'gk', name:'GK / GS', icon:'🌍', color:'#38bdf8' },
+  { id:'reasoning', name:'Reasoning', icon:'🧠', color:'#22d3ee' },
+];
+
+/* ---------------- theme (accent + subtle ambient blob glow, OLED-black base) ---------------- */
+const THEMES = {
+  graphite: {
+    accent:'#8c94a3', accent2:'#c3c9d4', accent3:'#eef1f6', glow:'140,148,163',
+    amb1:'#101115', amb2:'#0a0a0c', amb3:'#16171b'
+  },
+  blue: {
+    accent:'#3b82f6', accent2:'#60a5fa', accent3:'#7dd3fc', glow:'59,130,246',
+    amb1:'#0a1a2e', amb2:'#0a0a0c', amb3:'#0d1420'
+  },
+};
+const themeBtn = document.getElementById('themeBtn');
+const themePop = document.getElementById('themePop');
+let currentTheme = LS.get('ssc_theme', 'blue');
+
+function applyTheme(name, animate){
+  const t = THEMES[name] || THEMES.blue;
+  currentTheme = name;
+  LS.set('ssc_theme', name);
+  document.documentElement.style.setProperty('--accent', t.accent);
+  document.documentElement.style.setProperty('--accent-2', t.accent2);
+  document.documentElement.style.setProperty('--accent-3', t.accent3);
+  document.documentElement.style.setProperty('--accent-glow', t.glow);
+  document.documentElement.style.setProperty('--amb1', t.amb1);
+  document.documentElement.style.setProperty('--amb2', t.amb2);
+  document.documentElement.style.setProperty('--amb3', t.amb3);
+  document.querySelectorAll('.themeopt[data-theme]').forEach(s=>s.classList.toggle('active', s.dataset.theme===name));
+  if(activeView==='today') setTint(t.accent);
+  else if(activeView==='study') setTint((SUBJECTS.find(s=>s.id===activeSubject)||{}).color || t.accent);
+  else setTint(t.accent2);
+}
+themeBtn.addEventListener('click', ()=> themePop.classList.toggle('open'));
+themePop.addEventListener('click', e=>{
+  const opt = e.target.closest('.themeopt[data-theme]');
+  if(opt){ applyTheme(opt.dataset.theme, true); themePop.classList.remove('open'); }
+});
+document.addEventListener('click', e=>{
+  if(themePop.classList.contains('open') && !themePop.contains(e.target) && e.target!==themeBtn && !themeBtn.contains(e.target)){
+    themePop.classList.remove('open');
+  }
+});
+
+/* ---------------- state ---------------- */
+let todayOffset = LS.get('ssc_today_offset', 0);
+let activeView = 'today';
+let activeSubject = LS.get('ssc_active_subject', 'qa');
+let studyFilter = 'pending';
+
+let tasks = LS.get('ssc_tasks', []);            // {id,date,text,done,createdAt}
+let subjects = LS.get('ssc_subjects', {});       // { qa:{mockDate,reminder,tasks:[]} , ... }
+let notes = LS.get('ssc_notes', []);             // {id,text,type,date,time,done,createdAt}
+
+SUBJECTS.forEach(s=>{
+  if(!subjects[s.id]) subjects[s.id] = { mockDate:null, reminder:'', tasks:[] };
+  if(!subjects[s.id].tasks) subjects[s.id].tasks = [];
+  if(!subjects[s.id].notify) subjects[s.id].notify = { enabled:false, time:'18:00', lastFired:null };
+});
+function saveTasks(){ LS.set('ssc_tasks', tasks); }
+function saveSubjects(){ LS.set('ssc_subjects', subjects); }
+function saveNotes(){ LS.set('ssc_notes', notes); }
+
+let eveningReminder = LS.get('ssc_evening_reminder', { enabled:false, time:'21:00', lastFired:null });
+function saveEvening(){ LS.set('ssc_evening_reminder', eveningReminder); }
+
+/* ---------------- top bar + glow tint ---------------- */
+const topTitle = document.getElementById('topTitle');
+const topSub = document.getElementById('topSub');
+const glow = document.getElementById('glow');
+function setTint(hex){ glow.style.setProperty('--tint', hex); }
+
+/* ================= TODAY VIEW ================= */
+const todayList = document.getElementById('todayList');
+const todayInput = document.getElementById('todayInput');
+
+
+function currentDateStr(){ return dateStr(addDays(todayD(), todayOffset)); }
+
+/* ---- avatar progress ring (reflects *actual* today's completion, regardless of chip) ---- */
+const ringFill = document.getElementById('avatarRingFill');
+const RING_C = 2 * Math.PI * 19;
+ringFill.style.strokeDasharray = RING_C;
+function updateAvatarRing(){
+  const ds = dateStr(todayD());
+  const dayTasks = tasks.filter(t=>t.date===ds);
+  const done = dayTasks.filter(t=>t.done).length;
+  const total = dayTasks.length;
+  const frac = total ? done/total : 0;
+  ringFill.style.strokeDashoffset = RING_C * (1 - frac);
+}
+
+/* ---- daily streak: consecutive calendar days the app has been opened ---- */
+function updateStreak(){
+  const today = dateStr(todayD());
+  let streak = LS.get('ssc_streak', { count:0, lastDate:null });
+  if(streak.lastDate !== today){
+    const yesterday = dateStr(addDays(todayD(), -1));
+    streak.count = (streak.lastDate === yesterday) ? streak.count + 1 : 1;
+    streak.lastDate = today;
+    LS.set('ssc_streak', streak);
+  }
+  const badge = document.getElementById('streakBadge');
+  if(streak.count > 1){
+    document.getElementById('streakCount').textContent = streak.count;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function renderGreeting(){
+  const h = new Date().getHours();
+  const g = h<12 ? 'Good morning' : h<17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greetSub').textContent = g;
+}
+
+function renderToday(){
+  renderGreeting();
+  updateAvatarRing();
+  document.getElementById('chip-today').classList.toggle('active', todayOffset===0);
+  document.getElementById('chip-tomorrow').classList.toggle('active', todayOffset===1);
+  const ds = currentDateStr();
+  const dayTasks = tasks.filter(t=>t.date===ds).sort((a,b)=>a.createdAt-b.createdAt);
+
+  if(activeView==='today'){
+    topTitle.textContent = todayOffset===0 ? 'Today' : 'Tomorrow';
+    topSub.textContent = fmtNice(ds);
+  }
+
+  const done = dayTasks.filter(t=>t.done).length;
+  const total = dayTasks.length;
+  document.getElementById('statValue').textContent = `${done} of ${total} done`;
+  document.getElementById('statMax').textContent = total;
+  const frac = total? done/total : 0;
+  document.getElementById('statFill').style.width = (frac*100)+'%';
+  document.getElementById('statDot').style.left = (frac*100)+'%';
+
+  if(dayTasks.length===0){
+    todayList.innerHTML = `<div class="card empty"><div class="big">🌙</div>
+      <div class="msg">${todayOffset===1 ? "Plan tonight — add what you'll do tomorrow." : 'Nothing planned yet. Add your first task.'}</div></div>`;
+    return;
+  }
+  todayList.innerHTML = dayTasks.map(t=>`
+    <div class="task ${t.done?'done':''}" data-id="${t.id}">
+      <button class="check" data-act="toggle">${t.done?checkSvg():''}</button>
+      <div class="tasktext">${escapeHtml(t.text)}</div>
+      <button class="delx" data-act="del">${xSvg()}</button>
+    </div>`).join('');
+}
+
+todayInput.addEventListener('keydown', e=>{ if(e.key==='Enter') addTodayTask(); });
+document.getElementById('todayAddBtn').addEventListener('click', addTodayTask);
+function addTodayTask(){
+  const v = todayInput.value.trim();
+  if(!v) return;
+  tasks.push({ id:uid(), date:currentDateStr(), text:v, done:false, createdAt:Date.now() });
+  todayInput.value='';
+  saveTasks(); renderToday();
+}
+todayList.addEventListener('click', e=>{
+  const row = e.target.closest('.task'); if(!row) return;
+  const act = e.target.closest('[data-act]'); if(!act) return;
+  const id = row.dataset.id;
+  if(act.dataset.act==='toggle'){
+    const t = tasks.find(x=>x.id===id); if(t) t.done=!t.done;
+    saveTasks(); renderToday();
+  } else if(act.dataset.act==='del'){
+    tasks = tasks.filter(x=>x.id!==id);
+    saveTasks(); renderToday();
+  }
+});
+document.getElementById('chip-today').addEventListener('click', ()=>{ todayOffset=0; LS.set('ssc_today_offset',0); renderToday(); });
+document.getElementById('chip-tomorrow').addEventListener('click', ()=>{ todayOffset=1; LS.set('ssc_today_offset',1); renderToday(); });
+
+/* ================= STUDY VIEW ================= */
+const subjectChips = document.getElementById('subjectChips');
+const subjHero = document.getElementById('subjHero');
+const remindBox = document.getElementById('remindBox');
+const remindInput = document.getElementById('remindInput');
+const studyInput = document.getElementById('studyInput');
+const studyList = document.getElementById('studyList');
+const historyList = document.getElementById('historyList');
+const histCount = document.getElementById('histCount');
+
+function curSubject(){ return SUBJECTS.find(s=>s.id===activeSubject); }
+
+function renderSubjectChips(){
+  subjectChips.innerHTML = SUBJECTS.map(s=>`
+    <button class="chip ${s.id===activeSubject?'active':''}" data-id="${s.id}" style="--chip-c:${s.color}">
+      <span class="dot"></span>${s.name}
+    </button>`).join('');
+}
+subjectChips.addEventListener('click', e=>{
+  const b = e.target.closest('.chip'); if(!b) return;
+  activeSubject = b.dataset.id; LS.set('ssc_active_subject', activeSubject);
+  renderStudy();
+});
+
+function renderStudy(){
+  const s = curSubject();
+  const data = subjects[s.id];
+  document.documentElement.style.setProperty('--tint-cur', s.color);
+  setTint(s.color);
+
+  if(activeView==='study'){
+    topTitle.textContent = s.name;
+    topSub.textContent = 'Study planner';
+  }
+
+  renderSubjectChips();
+
+  const pend = data.tasks.filter(t=>!t.done).length;
+  const total = data.tasks.length;
+  let daysBadge = '';
+  if(data.mockDate){
+    const diff = Math.ceil((new Date(data.mockDate) - new Date(dateStr(todayD())))/86400000);
+    const urgent = diff<=2;
+    daysBadge = `<span class="mockdays ${urgent?'urgent':''}">${diff<0?'overdue':diff===0?'today':diff+'d left'}</span>`;
+  }
+  subjHero.style.setProperty('--chip-c', s.color);
+  subjHero.innerHTML = `
+    <div class="row1">
+      <div class="subjicon">${s.icon}</div>
+      <div>
+        <div class="subjname">${s.name}</div>
+        <div class="subjcount">${pend} pending · ${total} total topics</div>
+      </div>
+    </div>
+    <div class="mockrow">
+      <div class="mocklabel">Next mock exam</div>
+      <div class="mockdate">
+        <input type="date" id="mockDateInput" value="${data.mockDate||''}">
+        ${daysBadge}
+      </div>
+    </div>`;
+  document.getElementById('mockDateInput').addEventListener('change', e=>{
+    data.mockDate = e.target.value || null;
+    saveSubjects(); renderStudy();
+  });
+
+  remindBox.style.setProperty('--chip-c', s.color);
+  remindInput.value = data.reminder || '';
+  remindInput.oninput = ()=>{ data.reminder = remindInput.value; saveSubjects(); };
+  autoGrow(remindInput);
+  if(typeof syncSubjNotifyUI === 'function') syncSubjNotifyUI();
+
+  document.getElementById('filt-pending').classList.toggle('active', studyFilter==='pending');
+  document.getElementById('filt-done').classList.toggle('active', studyFilter==='done');
+
+  const list = data.tasks.filter(t=> studyFilter==='pending' ? !t.done : t.done)
+    .sort((a,b)=> studyFilter==='pending' ? a.createdAt-b.createdAt : (b.resolvedAt||0)-(a.resolvedAt||0));
+
+  if(list.length===0){
+    studyList.innerHTML = `<div class="card empty">
+      <div class="big">${studyFilter==='pending'?'📘':'✅'}</div>
+      <div class="msg">${studyFilter==='pending' ? 'No pending topics — add what to revise before the next mock.' : 'Nothing resolved yet.'}</div></div>`;
+  } else {
+    studyList.innerHTML = list.map(t=>`
+      <div class="task ${t.done?'done':''}" data-id="${t.id}">
+        <button class="check" data-act="toggle" style="${t.done?`background:${s.color};border-color:${s.color}`:''}">${t.done?checkSvg():''}</button>
+        <div>
+          <div class="tasktext">${escapeHtml(t.text)}</div>
+          ${t.done && t.resolvedAt ? `<div class="taskmeta">Resolved ${fmtNice(dateStr(new Date(t.resolvedAt)))}</div>` : ''}
+        </div>
+        <button class="delx" data-act="del">${xSvg()}</button>
+      </div>`).join('');
+  }
+
+  renderHistory();
+}
+
+studyInput.addEventListener('keydown', e=>{ if(e.key==='Enter') addStudyTask(); });
+document.getElementById('studyAddBtn').addEventListener('click', addStudyTask);
+function addStudyTask(){
+  const v = studyInput.value.trim(); if(!v) return;
+  subjects[activeSubject].tasks.push({ id:uid(), text:v, done:false, createdAt:Date.now(), resolvedAt:null });
+  studyInput.value='';
+  saveSubjects(); renderStudy();
+}
+studyList.addEventListener('click', e=>{
+  const row = e.target.closest('.task'); if(!row) return;
+  const act = e.target.closest('[data-act]'); if(!act) return;
+  const id = row.dataset.id;
+  const data = subjects[activeSubject];
+  if(act.dataset.act==='toggle'){
+    const t = data.tasks.find(x=>x.id===id);
+    if(t){ t.done = !t.done; t.resolvedAt = t.done ? Date.now() : null; }
+    saveSubjects(); renderStudy();
+  } else if(act.dataset.act==='del'){
+    data.tasks = data.tasks.filter(x=>x.id!==id);
+    saveSubjects(); renderStudy();
+  }
+});
+document.getElementById('filt-pending').addEventListener('click', ()=>{ studyFilter='pending'; renderStudy(); });
+document.getElementById('filt-done').addEventListener('click', ()=>{ studyFilter='done'; renderStudy(); });
+
+function renderHistory(){
+  const cutoff = Date.now() - 7*86400000;
+  let entries = [];
+  SUBJECTS.forEach(s=>{
+    subjects[s.id].tasks.filter(t=>t.done && t.resolvedAt && t.resolvedAt>=cutoff)
+      .forEach(t=> entries.push({ text:t.text, when:t.resolvedAt, color:s.color, subj:s.name }));
+  });
+  entries.sort((a,b)=>b.when-a.when);
+  histCount.textContent = entries.length ? `${entries.length} resolved` : '';
+  if(entries.length===0){
+    historyList.innerHTML = `<div class="card empty" style="padding:26px 20px;">
+      <div class="msg">Resolved topics from the last 7 days show up here.</div></div>`;
+    return;
+  }
+  const groups = {};
+  entries.forEach(e=>{
+    const k = dateStr(new Date(e.when));
+    (groups[k] = groups[k]||[]).push(e);
+  });
+  historyList.innerHTML = Object.keys(groups).sort().reverse().map(k=>`
+    <div class="histday">
+      <div class="d">${fmtNice(k)}</div>
+      ${groups[k].map(e=>`
+        <div class="histitem"><span class="tag" style="background:${e.color}"></span>
+          <s>${escapeHtml(e.text)}</s>&nbsp;<span style="color:var(--text-dim2)">· ${e.subj}</span>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ================= NOTES VIEW ================= */
+const noteInput = document.getElementById('noteInput');
+const noteSaveBtn = document.getElementById('noteSaveBtn');
+const notesList = document.getElementById('notesList');
+const noteCount = document.getElementById('noteCount');
+const schedRow = document.getElementById('schedRow');
+const noteDate = document.getElementById('noteDate');
+const noteTime = document.getElementById('noteTime');
+let noteType = 'permanent';
+
+document.getElementById('type-permanent').addEventListener('click', ()=>setNoteType('permanent'));
+document.getElementById('type-scheduled').addEventListener('click', ()=>setNoteType('scheduled'));
+function setNoteType(t){
+  noteType = t;
+  document.getElementById('type-permanent').classList.toggle('active', t==='permanent');
+  document.getElementById('type-scheduled').classList.toggle('active', t==='scheduled');
+  schedRow.classList.toggle('hidden', t!=='scheduled');
+  if(t==='scheduled' && !noteDate.value){
+    noteDate.value = dateStr(todayD());
+    noteTime.value = '20:00';
+  }
+}
+noteSaveBtn.addEventListener('click', ()=>{
+  const v = noteInput.value.trim(); if(!v) return;
+  const n = { id:uid(), text:v, type:noteType, done:false, createdAt:Date.now(), notified:false,
+    date: noteType==='scheduled'? noteDate.value : null,
+    time: noteType==='scheduled'? (noteTime.value||'09:00') : null };
+  notes.push(n);
+  noteInput.value=''; noteInput.style.height='';
+  saveNotes(); renderNotes();
+  maybeAskNotifyPermission();
+});
+noteInput.addEventListener('input', ()=>autoGrow(noteInput));
+
+function noteWhenMs(n){
+  if(n.type!=='scheduled' || !n.date) return null;
+  return new Date(`${n.date}T${n.time||'09:00'}:00`).getTime();
+}
+function renderNotes(){
+  if(activeView==='notes'){ topTitle.textContent='Notes'; topSub.textContent='Reminders & permanent notes'; }
+  const now = Date.now();
+  const list = notes.slice().sort((a,b)=>{
+    if(a.type==='permanent' && b.type!=='permanent') return -1;
+    if(b.type==='permanent' && a.type!=='permanent') return 1;
+    if(a.type==='scheduled' && b.type==='scheduled') return noteWhenMs(a)-noteWhenMs(b);
+    return b.createdAt-a.createdAt;
+  });
+  noteCount.textContent = notes.length ? notes.length : '';
+  if(list.length===0){
+    notesList.innerHTML = `<div class="card empty"><div class="big">🗒️</div>
+      <div class="msg">Add reminders for a specific time, or pin permanent notes here.</div></div>`;
+    return;
+  }
+  notesList.innerHTML = list.map(n=>{
+    const when = noteWhenMs(n);
+    const overdue = n.type==='scheduled' && !n.done && when && when<now;
+    let badges = '';
+    if(n.type==='permanent') badges += `<span class="badge pin">${pinSvg()} Permanent</span>`;
+    else badges += `<span class="badge ${overdue?'overdue':''}">${clockSvg()} ${fmtNice(n.date)} · ${fmtTime(n.time)}</span>`;
+    return `<div class="noteitem ${n.type==='permanent'?'pinned':''} ${overdue?'overdue':''} ${n.done?'done':''}" data-id="${n.id}">
+      <div class="noterow">
+        <button class="check" data-act="toggle" style="${n.done?'background:var(--good);border-color:var(--good)':''}">${n.done?checkSvg():''}</button>
+        <div class="notetxt">${escapeHtml(n.text)}
+          <div class="notebadges">${badges}</div>
+        </div>
+        <div class="noteactions">
+          <button class="nbtn" data-act="del">${xSvg()}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+notesList.addEventListener('click', e=>{
+  const row = e.target.closest('.noteitem'); if(!row) return;
+  const act = e.target.closest('[data-act]'); if(!act) return;
+  const id = row.dataset.id;
+  if(act.dataset.act==='toggle'){
+    const n = notes.find(x=>x.id===id); if(n) n.done=!n.done;
+    saveNotes(); renderNotes();
+  } else if(act.dataset.act==='del'){
+    notes = notes.filter(x=>x.id!==id);
+    saveNotes(); renderNotes();
+  }
+});
+
+/* ---- lightweight reminder firing while app is open ---- */
+function maybeAskNotifyPermission(){
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission().catch(()=>{});
+  }
+}
+setInterval(()=>{
+  const now = Date.now();
+  let changed = false;
+  notes.forEach(n=>{
+    if(n.type==='scheduled' && !n.notified && !n.done){
+      const w = noteWhenMs(n);
+      if(w && w<=now){
+        n.notified = true; changed = true;
+        if('Notification' in window && Notification.permission==='granted'){
+          try{ new Notification('SSC Planner', { body:n.text }); }catch(e){}
+        }
+      }
+    }
+  });
+  if(changed){ saveNotes(); if(activeView==='notes') renderNotes(); }
+}, 20000);
+
+/* ================= NAV ================= */
+document.querySelectorAll('.navbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    activeView = btn.dataset.view;
+    document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b===btn));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+activeView).classList.add('active');
+    if(activeView==='today'){ setTint(THEMES[currentTheme].accent); renderToday(); }
+    if(activeView==='study'){ renderStudy(); }
+    if(activeView==='notes'){ setTint(THEMES[currentTheme].accent2); renderNotes(); }
+  });
+});
+
+/* ---------------- utils ---------------- */
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function checkSvg(){ return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`; }
+function xSvg(){ return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`; }
+function pinSvg(){ return `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M8 3h8l-1 6 3 3v2H6v-2l3-3-1-6Z"/></svg>`; }
+function clockSvg(){ return `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`; }
+function autoGrow(el){ el.style.height='auto'; el.style.height = el.scrollHeight+'px'; }
+
+/* ---------------- toggle wiring ---------------- */
+function paintToggle(el, on){ el.classList.toggle('on', !!on); }
+
+const eveningToggle = document.getElementById('eveningToggle');
+const eveningTimeRow = document.getElementById('eveningTimeRow');
+const eveningTimeInput = document.getElementById('eveningTimeInput');
+function syncEveningUI(){
+  paintToggle(eveningToggle, eveningReminder.enabled);
+  eveningTimeInput.value = eveningReminder.time || '21:00';
+  eveningTimeRow.style.opacity = eveningReminder.enabled ? '1' : '.45';
+}
+eveningToggle.addEventListener('click', ()=>{
+  eveningReminder.enabled = !eveningReminder.enabled;
+  saveEvening(); syncEveningUI();
+  if(eveningReminder.enabled) maybeAskNotifyPermission();
+});
+eveningTimeInput.addEventListener('change', ()=>{
+  eveningReminder.time = eveningTimeInput.value || '21:00';
+  saveEvening();
+});
+syncEveningUI();
+
+const subjNotifyToggle = document.getElementById('subjNotifyToggle');
+const subjNotifyTimeRow = document.getElementById('subjNotifyTimeRow');
+const subjNotifyTimeInput = document.getElementById('subjNotifyTimeInput');
+function syncSubjNotifyUI(){
+  const n = subjects[activeSubject].notify;
+  paintToggle(subjNotifyToggle, n.enabled);
+  subjNotifyTimeInput.value = n.time || '18:00';
+  subjNotifyTimeRow.style.opacity = n.enabled ? '1' : '.45';
+}
+subjNotifyToggle.addEventListener('click', ()=>{
+  const n = subjects[activeSubject].notify;
+  n.enabled = !n.enabled;
+  saveSubjects(); syncSubjNotifyUI();
+  if(n.enabled) maybeAskNotifyPermission();
+});
+subjNotifyTimeInput.addEventListener('change', ()=>{
+  subjects[activeSubject].notify.time = subjNotifyTimeInput.value || '18:00';
+  saveSubjects();
+});
+
+/* ---- fire daily reminders (evening nudge + per-subject) while app is open ---- */
+function checkDailyReminders(){
+  const now = new Date();
+  const nowStr = pad(now.getHours())+':'+pad(now.getMinutes());
+  const today = dateStr(now);
+  let changed = false;
+
+  if(eveningReminder.enabled && eveningReminder.time===nowStr && eveningReminder.lastFired!==today){
+    eveningReminder.lastFired = today; changed = true; saveEvening();
+    fireNotify('Plan tomorrow', "It's evening — add what you'll tackle tomorrow.");
+  }
+  SUBJECTS.forEach(s=>{
+    const n = subjects[s.id].notify;
+    if(n.enabled && n.time===nowStr && n.lastFired!==today){
+      n.lastFired = today; changed = true;
+      fireNotify(s.name, subjects[s.id].reminder || `Time to start ${s.name}`);
+    }
+  });
+  if(changed) saveSubjects();
+}
+function fireNotify(title, body){
+  if('Notification' in window && Notification.permission==='granted'){
+    try{ new Notification(title, { body }); }catch(e){}
+  }
+}
+setInterval(checkDailyReminders, 20000);
+
+/* ---------------- boot ---------------- */
+document.getElementById('avatarInitials').textContent = 'AK';
+applyTheme(currentTheme, false);
+updateStreak();
+renderToday();
+renderStudy();
+renderNotes();
+})();
+</script>
+
+<!-- ================= PWA: register service worker ================= -->
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
