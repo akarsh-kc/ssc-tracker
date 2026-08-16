@@ -351,64 +351,6 @@ body.bg-paused #ambientBg .blob{animation-play-state:paused;}
   display:flex;align-items:center;justify-content:center;border-radius:50%;}
 .nbtn:active{background:var(--glass-fill-strong);}
 
-/* ---- Today CA (current affairs) ---- */
-.caheadrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
-.caiconbtn{position:relative;width:36px;height:36px;flex:0 0 auto;border-radius:50%;border:1px solid var(--glass-stroke);
-  background:linear-gradient(155deg, var(--glass-fill-strong), var(--glass-fill) 60%);
-  backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
-  color:var(--text-dim);display:flex;align-items:center;justify-content:center;overflow:hidden;
-  box-shadow:0 8px 18px -10px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.2);
-  transition:transform .18s var(--spring), background .2s var(--smooth);}
-.caiconbtn::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,0) 50%);}
-.caiconbtn:active{transform:scale(.9);}
-.caiconbtn svg{width:17px;height:17px;position:relative;}
-.caiconbtn.spinning svg{animation:caspin .8s linear infinite;}
-html.lite .caiconbtn{backdrop-filter:blur(9px) saturate(140%);-webkit-backdrop-filter:blur(9px) saturate(140%);}
-.casettings{padding:16px;margin:10px 0 16px;display:none;}
-.casettings.open{display:block;}
-.casettings .cafield{margin-bottom:12px;}
-.casettings label{font-size:12px;font-weight:700;color:var(--text-dim);display:block;margin-bottom:6px;}
-.casettings input{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--glass-stroke);
-  background:var(--glass-fill-strong);color:var(--text);font-size:14px;}
-.casettings .cahint{font-size:11.5px;color:var(--text-dim2);line-height:1.4;margin-top:2px;}
-.casavebtn{width:100%;padding:12px 0;border-radius:var(--radius-pill);border:none;background:var(--accent);
-  color:#fff;font-size:14px;font-weight:700;margin-top:2px;}
-.caloadbtn{width:100%;padding:16px;border-radius:var(--radius-lg);border:1px solid var(--glass-stroke);
-  background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 22%, var(--glass-fill)), var(--glass-fill));
-  color:var(--text);font-size:14.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;
-  margin-bottom:16px;}
-.caloadbtn svg{width:18px;height:18px;}
-.caloadbtn:disabled{opacity:.6;}
-.cameta{font-size:12px;color:var(--text-dim2);margin:-8px 0 14px 4px;display:flex;align-items:center;justify-content:space-between;}
-.caspin{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;
-  animation:caspin .7s linear infinite;display:inline-block;}
-@keyframes caspin{to{transform:rotate(360deg);}}
-.caitem{position:relative;padding:19px 18px;margin-bottom:12px;overflow:hidden;
-  background:linear-gradient(155deg, var(--glass-fill-strong), var(--glass-fill) 55%, rgba(255,255,255,.02));
-  backdrop-filter:blur(26px) saturate(180%);-webkit-backdrop-filter:blur(26px) saturate(180%);
-  box-shadow:var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,.16);}
-.caitem::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
-  background:linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,0) 45%);}
-.caitem::after{content:"";position:absolute;top:-40%;left:-20%;width:70%;height:90%;pointer-events:none;
-  background:radial-gradient(circle, color-mix(in srgb, var(--catag-c,var(--accent)) 30%, transparent), transparent 70%);
-  filter:blur(30px);opacity:.5;}
-.catag{position:relative;display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:var(--radius-pill);
-  font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;
-  color:var(--catag-c,var(--accent-3));
-  background:color-mix(in srgb, var(--catag-c,var(--accent)) 22%, var(--glass-fill-strongest));
-  border:1px solid color-mix(in srgb, var(--catag-c,var(--accent)) 45%, var(--glass-stroke));}
-.catag .dot{width:6px;height:6px;border-radius:50%;background:var(--catag-c,var(--accent));flex:0 0 auto;}
-.cahead{position:relative;font-size:15.5px;font-weight:800;margin-bottom:8px;line-height:1.3;}
-.cabody{position:relative;font-size:13.8px;line-height:1.62;color:var(--text-dim);}
-.cabody b{color:var(--text);font-weight:700;}
-.cabody i{color:var(--accent-3);font-style:normal;font-weight:600;}
-html.lite .caitem{backdrop-filter:blur(12px) saturate(140%);-webkit-backdrop-filter:blur(12px) saturate(140%);}
-html.lite .caitem::after{display:none;}
-.caerr{padding:16px 18px;border-radius:var(--radius-md);margin-bottom:14px;
-  background:color-mix(in srgb, #ef4444 14%, var(--glass-fill));border:1px solid color-mix(in srgb, #ef4444 40%, var(--glass-stroke));
-  color:#fca5a5;font-size:13.5px;line-height:1.5;}
-
 /* ---- bottom nav (Waveform playerbar-style glass shade) ---- */
 #nav{position:fixed;left:14px;right:14px;bottom:calc(var(--safe-b) + 14px);z-index:50;
   padding:8px;border-radius:var(--radius-lg);
@@ -596,47 +538,6 @@ html.lite .caitem::after{display:none;}
     <div id="notesList"></div>
   </div>
 
-  <!-- ================= TODAY CA ================= -->
-  <div class="view" id="view-ca">
-    <div class="caheadrow">
-      <button class="caiconbtn" id="caRefreshTopBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-      </button>
-      <div style="flex:1;min-width:0;padding:0 10px;">
-        <div class="greetname">Today's CA</div>
-        <div class="statlabel" style="margin-top:2px;">Curated from live news for the SSC pattern</div>
-      </div>
-      <button class="caiconbtn" id="caSettingsBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-      </button>
-    </div>
-
-    <div class="card casettings" id="caSettings">
-      <div class="cafield">
-        <label>GNews API key</label>
-        <input type="password" id="caGnewsKey" placeholder="Paste your GNews API key" autocomplete="off">
-      </div>
-      <div class="cafield">
-        <label>Gemini API key</label>
-        <input type="password" id="caGeminiKey" placeholder="Paste your Gemini API key" autocomplete="off">
-      </div>
-      <div class="cafield" style="margin-bottom:8px;">
-        <label>Gemini model</label>
-        <input type="text" id="caGeminiModel" placeholder="gemini-3.7-flash">
-        <div class="cahint">Change this if your key only has access to a different Gemini model.</div>
-      </div>
-      <div class="cahint" style="margin-bottom:12px;">Both keys stay only in this browser's local storage and are sent straight from your device to GNews / Google — never through any server of ours. Get a free GNews key at gnews.io and a Gemini key at aistudio.google.com.</div>
-      <button class="casavebtn" id="caSaveKeysBtn">Save keys</button>
-    </div>
-
-    <button class="caloadbtn" id="caLoadBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-      <span id="caLoadBtnLbl">Load Today's CA</span>
-    </button>
-
-    <div id="caMeta"></div>
-    <div id="caList"></div>
-  </div>
 
 </div>
 
@@ -653,10 +554,7 @@ html.lite .caitem::after{display:none;}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M15 3v6h6"/><path d="M9 13h6M9 17h4"/></svg>
     <span class="lbl">Notes</span>
   </button>
-  <button class="navbtn" data-view="ca" id="nav-ca">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h13a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4Z"/><path d="M20 20a3 3 0 0 0 0-6h-3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
-    <span class="lbl">Today CA</span>
-  </button>
+
 </div>
 
 <script>
@@ -1148,213 +1046,6 @@ setInterval(()=>{
   if(changed){ saveNotes(); if(activeView==='notes') renderNotes(); }
 }, 20000);
 
-/* ================= TODAY CA ================= */
-let caConfig = LS.get('ssc_ca_config', { gnewsKey:'', geminiKey:'', geminiModel:'gemini-3.7-flash' });
-if(caConfig.geminiModel==='gemini-2.5-flash' || caConfig.geminiModel==='gemini-2.5-flash-lite' || caConfig.geminiModel==='gemini-2.5-pro'){
-  caConfig.geminiModel = 'gemini-3.7-flash'; // old default is being shut down by Google — bump saved configs forward
-}
-function saveCaConfig(){ LS.set('ssc_ca_config', caConfig); }
-
-const caSettingsBtn = document.getElementById('caSettingsBtn');
-const caRefreshTopBtn = document.getElementById('caRefreshTopBtn');
-const caSettings = document.getElementById('caSettings');
-const caGnewsKeyInput = document.getElementById('caGnewsKey');
-const caGeminiKeyInput = document.getElementById('caGeminiKey');
-const caGeminiModelInput = document.getElementById('caGeminiModel');
-const caLoadBtn = document.getElementById('caLoadBtn');
-const caLoadBtnLbl = document.getElementById('caLoadBtnLbl');
-const caMeta = document.getElementById('caMeta');
-const caList = document.getElementById('caList');
-
-function syncCaSettingsUI(){
-  caGnewsKeyInput.value = caConfig.gnewsKey || '';
-  caGeminiKeyInput.value = caConfig.geminiKey || '';
-  caGeminiModelInput.value = caConfig.geminiModel || 'gemini-3.7-flash';
-}
-syncCaSettingsUI();
-
-caSettingsBtn.addEventListener('click', ()=> caSettings.classList.toggle('open'));
-document.getElementById('caSaveKeysBtn').addEventListener('click', ()=>{
-  caConfig.gnewsKey = caGnewsKeyInput.value.trim();
-  caConfig.geminiKey = caGeminiKeyInput.value.trim();
-  caConfig.geminiModel = caGeminiModelInput.value.trim() || 'gemini-3.7-flash';
-  saveCaConfig();
-  caSettings.classList.remove('open');
-});
-
-function caTodayKey(){ return dateStr(todayD()); }
-function caLoadCache(){ return LS.get('ssc_ca_cache', { date:null, items:[] }); }
-function caSaveCache(items){ LS.set('ssc_ca_cache', { date:caTodayKey(), items }); }
-
-/* light inline markdown -> **bold** and *italic* only, everything else escaped */
-function caFormatBody(s){
-  let out = escapeHtml(String(s||''));
-  out = out.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-  out = out.replace(/\*(.+?)\*/g, '<i>$1</i>');
-  return out;
-}
-
-const CA_TAG_COLORS = {
-  'National':'#3b82f6', 'International':'#38bdf8', 'Schemes & Policies':'#22d3ee',
-  'Awards & Prizes':'#facc15', 'Books & Authors':'#a78bfa', 'Sports':'#4ade80',
-  'People in the News':'#fb923c', 'Static GK':'#60a5fa'
-};
-function caTagDot(tag){ return `<span class="dot"></span>`; }
-function renderCaItems(items, dateLabel){
-  if(!items || !items.length){
-    caList.innerHTML = `<div class="empty"><div class="big">🗞️</div><div class="msg">Nothing came back — try again.</div></div>`;
-    caMeta.innerHTML = '';
-    return;
-  }
-  caMeta.innerHTML = `<span>${dateLabel} · ${items.length} items</span>`;
-  caList.innerHTML = items.map(it => {
-    const color = CA_TAG_COLORS[it.tag] || '#3b82f6';
-    return `
-    <div class="card caitem" style="--catag-c:${color};">
-      ${it.tag ? `<span class="catag">${caTagDot(it.tag)}${escapeHtml(it.tag)}</span>` : ''}
-      <div class="cahead">${escapeHtml(it.heading||'')}</div>
-      <div class="cabody">${caFormatBody(it.body||'')}</div>
-    </div>`;
-  }).join('');
-}
-
-function caShowError(msg){
-  caList.innerHTML = `<div class="caerr">${escapeHtml(msg)}</div>`;
-  caMeta.innerHTML = '';
-}
-
-async function caFetchNews(){
-  const key = encodeURIComponent(caConfig.gnewsKey);
-  const mk = cat => `https://gnews.io/api/v4/top-headlines?category=${cat}&lang=en&country=in&max=10&apikey=${key}`;
-  const results = await Promise.allSettled([ fetch(mk('nation')), fetch(mk('world')) ]);
-  const ok = results.filter(r => r.status==='fulfilled' && r.value.ok).map(r => r.value);
-  if(!ok.length){
-    const networkFailed = results.some(r => r.status==='rejected');
-    if(networkFailed){
-      throw new Error("Couldn't reach GNews (gnews.io) — check your internet connection, or that it isn't blocked by an ad blocker, private DNS, or firewall on this device.");
-    }
-    const failed = results.find(r => r.status==='fulfilled');
-    const status = failed ? failed.value.status : '?';
-    throw new Error(`GNews request failed (status ${status}) — check your API key and daily quota.`);
-  }
-  const datas = await Promise.all(ok.map(r => r.json()));
-  const all = datas.flatMap(d => d.articles || []);
-  const seen = new Set();
-  const dedup = [];
-  all.forEach(a=>{
-    const t = (a.title||'').trim();
-    if(t && !seen.has(t)){ seen.add(t); dedup.push(a); }
-  });
-  if(!dedup.length) throw new Error('GNews returned no articles for today.');
-  return dedup.slice(0, 18);
-}
-
-async function caAskGemini(articles){
-  const listText = articles.map((a,i)=> `${i+1}. ${a.title}${a.description? ' — '+a.description : ''}`).join('\n');
-  const prompt = `You are curating today's Current Affairs for SSC (Staff Selection Commission) exam aspirants — CGL, CHSL, MTS, GD — matching the current SSC question pattern under Eduquity (SSC's exam-conducting agency since July 2025): fast, fact-dense recall items rather than long explainers.
-
-From the news items below, select only items that fall into these categories:
-- National news (government decisions, appointments, policies)
-- International news (only if globally significant)
-- Government schemes & policies
-- Awards & prizes
-- Books & authors
-- Sports events (records, tournaments, results)
-- People in the news (appointments, resignations, deaths of notable figures)
-- Any item with a strong static-GK hook (geography, history, economy, environment tied to the news event)
-
-Skip pure entertainment, celebrity gossip, and local crime with no national significance. Merge duplicates covering the same event.
-
-For each selected item return:
-- "tag": exactly one of "National", "International", "Schemes & Policies", "Awards & Prizes", "Books & Authors", "Sports", "People in the News", "Static GK"
-- "heading": a short, specific 4-8 word title
-- "body": 6-7 lines of exam-ready facts written directly (numbers, names, places, dates). Bold the key facts using **double asterisks** and italicize supporting context using *single asterisks*. Do not add any commentary about exam relevance or importance — just the facts.
-
-Return ONLY a JSON array in this exact shape, nothing else:
-[{"tag":"...", "heading":"...", "body":"..."}]
-
-News items:
-${listText}`;
-
-  const model = caConfig.geminiModel || 'gemini-3.7-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(caConfig.geminiKey)}`;
-  let res;
-  try{
-    res = await fetch(url, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        contents:[{ parts:[{ text:prompt }] }],
-        generationConfig:{ responseMimeType:'application/json' }
-      })
-    });
-  }catch(networkErr){
-    throw new Error("Couldn't reach Gemini's API (generativelanguage.googleapis.com) — check your internet connection, or that it isn't blocked by an ad blocker, private DNS, or firewall on this device.");
-  }
-  if(!res.ok){
-    const errBody = await res.text().catch(()=> '');
-    let detail = '';
-    try{ detail = JSON.parse(errBody).error.message; }catch(e){}
-    throw new Error(`Gemini request failed (status ${res.status})${detail ? ': '+detail : ' — check your API key / model name.'}`);
-  }
-  const data = await res.json();
-  const text = data && data.candidates && data.candidates[0] && data.candidates[0].content
-    && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
-    && data.candidates[0].content.parts[0].text;
-  if(!text) throw new Error('Gemini returned an empty response.');
-  let items;
-  try{ items = JSON.parse(text); }
-  catch(e){ throw new Error("Could not parse Gemini's response as JSON."); }
-  if(!Array.isArray(items)) throw new Error("Gemini's response was not a list of items.");
-  return items;
-}
-
-async function loadTodayCA(forceRefresh){
-  if(!caConfig.gnewsKey || !caConfig.geminiKey){
-    caSettings.classList.add('open');
-    caShowError('Add your GNews and Gemini API keys above first.');
-    return;
-  }
-  if(!forceRefresh){
-    const cache = caLoadCache();
-    if(cache.date===caTodayKey() && cache.items && cache.items.length){
-      renderCaItems(cache.items, fmtNice(cache.date));
-      return;
-    }
-  }
-  caLoadBtn.disabled = true;
-  caRefreshTopBtn.disabled = true;
-  caRefreshTopBtn.classList.add('spinning');
-  caLoadBtnLbl.innerHTML = `<span class="caspin"></span> Loading…`;
-  caList.innerHTML = '';
-  caMeta.innerHTML = '';
-  try{
-    const articles = await caFetchNews();
-    const items = await caAskGemini(articles);
-    caSaveCache(items);
-    renderCaItems(items, fmtNice(caTodayKey()));
-  }catch(e){
-    caShowError(e.message || "Something went wrong loading today's CA.");
-  }finally{
-    caLoadBtn.disabled = false;
-    caRefreshTopBtn.disabled = false;
-    caRefreshTopBtn.classList.remove('spinning');
-    caLoadBtnLbl.textContent = "Load Today's CA";
-  }
-}
-caLoadBtn.addEventListener('click', ()=> loadTodayCA(false));
-caRefreshTopBtn.addEventListener('click', ()=> loadTodayCA(true));
-
-function renderCaOnEnter(){
-  const cache = caLoadCache();
-  if(cache.date===caTodayKey() && cache.items && cache.items.length){
-    renderCaItems(cache.items, fmtNice(cache.date));
-  } else {
-    caList.innerHTML = '';
-    caMeta.innerHTML = '';
-  }
-}
-
 /* ================= NAV ================= */
 document.querySelectorAll('.navbtn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -1365,7 +1056,6 @@ document.querySelectorAll('.navbtn').forEach(btn=>{
     if(activeView==='today'){ setTint(THEMES[currentTheme].accent); renderToday(); }
     if(activeView==='study'){ renderStudy(); }
     if(activeView==='notes'){ setTint(THEMES[currentTheme].accent2); renderNotes(); }
-    if(activeView==='ca'){ setTint(THEMES[currentTheme].accent3 || THEMES[currentTheme].accent2); renderCaOnEnter(); }
   });
 });
 
