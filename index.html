@@ -62,7 +62,7 @@
   --spring:cubic-bezier(.34,1.56,.64,1);
   --smooth:cubic-bezier(.4,0,.2,1);
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
@@ -135,16 +135,16 @@ input,textarea{-webkit-appearance:none;appearance:none;outline:none;}
 
 /* ---- scroll area ---- */
 #scroller{position:absolute;inset:0;overflow-y:auto;padding:calc(var(--safe-t) + 78px) 16px calc(var(--safe-b) + 118px);
-  -webkit-overflow-scrolling:touch;z-index:3;}
-.view{position:absolute;inset:0;opacity:0;pointer-events:none;}
-.view.active{position:relative;opacity:1;pointer-events:auto;animation:fadein .25s ease;}
+  -webkit-overflow-scrolling:touch;z-index:3;contain:layout style;}
+.view{position:absolute;inset:0;opacity:0;pointer-events:none;content-visibility:hidden;}
+.view.active{position:relative;opacity:1;pointer-events:auto;content-visibility:visible;animation:fadein .25s ease;}
 @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
 /* ---- glass card base ---- */
 .card{background:var(--glass-fill);border:1px solid var(--glass-stroke);border-radius:var(--radius-lg);
   backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
   box-shadow:var(--glass-shadow);
-  transform:translateZ(0);isolation:isolate;}
+  transform:translateZ(0);isolation:isolate;contain:layout style paint;}
 
 /* ---- perf: suspend backdrop-filter on fixed chrome while the list is actively scrolling ----
    backdrop-filter over a scrolling area is recomputed every frame; freezing it for ~150ms
@@ -195,14 +195,18 @@ body.bg-paused #ambientBg .blob{animation-play-state:paused;}
   box-shadow:0 8px 18px -8px rgba(var(--accent-glow),.55);}
 .greetsub{font-size:12px;color:var(--text-dim);font-weight:600;display:flex;align-items:center;gap:6px;}
 .greetname{font-size:17px;font-weight:800;margin-top:1px;}
-.streakbadge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px 3px 7px;border-radius:var(--radius-pill);
-  background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 30%, var(--glass-fill-strong)), var(--glass-fill));
-  border:1px solid color-mix(in srgb, var(--accent) 45%, var(--glass-stroke));color:var(--accent-3);
-  font-size:11px;font-weight:800;backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+.streakbadge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px 4px 8px;border-radius:var(--radius-pill);
+  background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 38%, var(--glass-fill-strong)), var(--glass-fill));
+  border:1px solid color-mix(in srgb, var(--accent) 55%, var(--glass-stroke));color:var(--accent-3);
+  font-size:12.5px;font-weight:800;backdrop-filter:blur(var(--glass-blur)) saturate(160%);
   -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 4px 14px -6px rgba(var(--accent-glow),.5);}
-.streakbadge svg{width:11px;height:11px;filter:drop-shadow(0 0 4px rgba(var(--accent-glow),.6));}
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 4px 14px -6px rgba(var(--accent-glow),.5);
+  animation:streakglow 2.6s ease-in-out infinite;}
+.streakbadge svg{width:13px;height:13px;filter:drop-shadow(0 0 4px rgba(var(--accent-glow),.6));}
 .streakbadge.hidden{display:none;}
+@keyframes streakglow{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 4px 14px -6px rgba(var(--accent-glow),.5);}
+  50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 4px 18px -4px rgba(var(--accent-glow),.85);}}
+@media (prefers-reduced-motion:reduce){.streakbadge{animation:none;}}
 
 /* ---- dashboard stat card (progress bar w/ dot, min/max labels) ---- */
 .statcard{padding:18px;margin-bottom:4px;}
@@ -221,6 +225,34 @@ body.bg-paused #ambientBg .blob{animation-play-state:paused;}
 .statbar .dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:#fff;
   transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(0,0,0,.5);transition:left .5s var(--smooth);}
 .statrange{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim2);margin-top:8px;}
+
+/* ---- weekly review card (glass, 3-stat row) ---- */
+.reviewcard{padding:17px 18px 15px;margin-bottom:4px;}
+.reviewcard .rtitle{font-size:12px;color:var(--text-dim);font-weight:700;display:flex;align-items:center;
+  justify-content:space-between;margin-bottom:14px;}
+.reviewcard .rtitle .rrange{font-weight:600;color:var(--text-dim2);font-size:11px;}
+.reviewrow{display:flex;}
+.reviewstat{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;}
+.reviewstat+.reviewstat::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:1px;
+  background:var(--glass-stroke);}
+.reviewicon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  background:var(--glass-fill-strong);color:var(--rc,var(--accent-3));}
+.reviewnum{font-size:18px;font-weight:800;line-height:1.1;}
+.reviewlbl{font-size:10.5px;color:var(--text-dim2);font-weight:600;text-align:center;}
+
+/* ---- notes search bar ---- */
+.searchbar{position:relative;margin:0 2px 14px;}
+.searchbar svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--text-dim2);
+  pointer-events:none;}
+.searchbar input{width:100%;padding:13px 16px 13px 41px;border-radius:var(--radius-pill);
+  border:1px solid var(--glass-stroke);background:var(--glass-fill);color:var(--text);font-size:14.5px;
+  backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));}
+.searchbar input::placeholder{color:var(--text-dim2);}
+.searchbar .clearx{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:28px;height:28px;
+  border-radius:50%;border:none;background:var(--glass-fill-strong);color:var(--text-dim);
+  display:none;align-items:center;justify-content:center;}
+.searchbar.has-query .clearx{display:flex;}
+
 
 /* ---- iOS-style toggle switch ---- */
 .toggle{position:relative;width:48px;height:29px;flex:0 0 auto;border-radius:var(--radius-pill);
@@ -446,6 +478,27 @@ body.bg-paused #ambientBg .blob{animation-play-state:paused;}
       <div class="statrange"><span>0</span><span id="statMax">0</span></div>
     </div>
 
+    <div class="card reviewcard" id="reviewCard">
+      <div class="rtitle"><span>This week</span><span class="rrange" id="reviewRange"></span></div>
+      <div class="reviewrow">
+        <div class="reviewstat">
+          <div class="reviewicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 15 2 2 4-4"/><rect x="4" y="5" width="16" height="16" rx="3"/></svg></div>
+          <div class="reviewnum" id="reviewTasks">0</div>
+          <div class="reviewlbl">Tasks done</div>
+        </div>
+        <div class="reviewstat">
+          <div class="reviewicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></div>
+          <div class="reviewnum" id="reviewTopics">0</div>
+          <div class="reviewlbl">Topics resolved</div>
+        </div>
+        <div class="reviewstat">
+          <div class="reviewicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-2 4-2 7a3 3 0 0 0 6 0c1.5 1.5 2 3.5 2 5a6 6 0 1 1-12 0c0-4 3-6 3-9 0-1 1-2 3-3Z"/></svg></div>
+          <div class="reviewnum" id="reviewStreak">0</div>
+          <div class="reviewlbl">Day streak</div>
+        </div>
+      </div>
+    </div>
+
     <div class="card settingrow" style="flex-direction:column;align-items:stretch;">
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div>
@@ -532,6 +585,12 @@ body.bg-paused #ambientBg .blob{animation-play-state:paused;}
         <input type="time" id="noteTime">
       </div>
       <button class="notesavebtn" id="noteSaveBtn">Add note</button>
+    </div>
+
+    <div class="searchbar" id="noteSearchBar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="noteSearch" placeholder="Search notes…" autocomplete="off">
+      <button class="clearx" id="noteSearchClear"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
 
     <div class="seclabel">All notes <span class="count" id="noteCount"></span></div>
@@ -694,12 +753,8 @@ function updateStreak(){
     LS.set('ssc_streak', streak);
   }
   const badge = document.getElementById('streakBadge');
-  if(streak.count > 1){
-    document.getElementById('streakCount').textContent = streak.count;
-    badge.classList.remove('hidden');
-  } else {
-    badge.classList.add('hidden');
-  }
+  document.getElementById('streakCount').textContent = streak.count;
+  badge.classList.remove('hidden');
 }
 
 function renderGreeting(){
@@ -708,9 +763,27 @@ function renderGreeting(){
   document.getElementById('greetSub').textContent = g;
 }
 
+function renderWeekReview(){
+  const now = todayD();
+  const cutoff = Date.now() - 6*86400000; // last 7 calendar days incl. today
+  const start = dateStr(addDays(now, -6));
+  let tasksDone = 0;
+  tasks.forEach(t=>{ if(t.done && t.date>=start && t.date<=dateStr(now)) tasksDone++; });
+  let topicsResolved = 0;
+  SUBJECTS.forEach(s=>{
+    subjects[s.id].tasks.forEach(t=>{ if(t.done && t.resolvedAt && t.resolvedAt>=cutoff) topicsResolved++; });
+  });
+  const streak = LS.get('ssc_streak', { count:0 }).count;
+  document.getElementById('reviewTasks').textContent = tasksDone;
+  document.getElementById('reviewTopics').textContent = topicsResolved;
+  document.getElementById('reviewStreak').textContent = streak;
+  document.getElementById('reviewRange').textContent = `${fmtNice(start)} – ${fmtNice(dateStr(now))}`;
+}
+
 function renderToday(){
   renderGreeting();
   updateAvatarRing();
+  renderWeekReview();
   document.getElementById('chip-today').classList.toggle('active', todayOffset===0);
   document.getElementById('chip-tomorrow').classList.toggle('active', todayOffset===1);
   const ds = currentDateStr();
@@ -926,6 +999,24 @@ const schedRow = document.getElementById('schedRow');
 const noteDate = document.getElementById('noteDate');
 const noteTime = document.getElementById('noteTime');
 let noteType = 'permanent';
+let noteSearchQuery = '';
+const noteSearchInput = document.getElementById('noteSearch');
+const noteSearchBar = document.getElementById('noteSearchBar');
+const noteSearchClear = document.getElementById('noteSearchClear');
+let noteSearchDebounce;
+noteSearchInput.addEventListener('input', ()=>{
+  clearTimeout(noteSearchDebounce);
+  noteSearchBar.classList.toggle('has-query', !!noteSearchInput.value);
+  noteSearchDebounce = setTimeout(()=>{
+    noteSearchQuery = noteSearchInput.value;
+    renderNotes();
+  }, 120);
+});
+noteSearchClear.addEventListener('click', ()=>{
+  noteSearchInput.value=''; noteSearchQuery='';
+  noteSearchBar.classList.remove('has-query');
+  renderNotes();
+});
 
 document.getElementById('type-permanent').addEventListener('click', ()=>setNoteType('permanent'));
 document.getElementById('type-scheduled').addEventListener('click', ()=>setNoteType('scheduled'));
@@ -958,7 +1049,10 @@ function noteWhenMs(n){
 function renderNotes(){
   if(activeView==='notes'){ topTitle.textContent='Notes'; topSub.textContent='Reminders & permanent notes'; }
   const now = Date.now();
-  const list = notes.slice().sort((a,b)=>{
+  const q = noteSearchQuery.trim().toLowerCase();
+  let list = notes.slice();
+  if(q) list = list.filter(n=> n.text.toLowerCase().includes(q));
+  list.sort((a,b)=>{
     if(a.type==='permanent' && b.type!=='permanent') return -1;
     if(b.type==='permanent' && a.type!=='permanent') return 1;
     if(a.type==='scheduled' && b.type==='scheduled') return noteWhenMs(a)-noteWhenMs(b);
@@ -966,7 +1060,9 @@ function renderNotes(){
   });
   noteCount.textContent = notes.length ? notes.length : '';
   if(list.length===0){
-    notesList.innerHTML = `<div class="card empty"><div class="big">🗒️</div>
+    notesList.innerHTML = q
+      ? `<div class="card empty"><div class="big">🔍</div><div class="msg">No notes match "${escapeHtml(noteSearchQuery.trim())}".</div></div>`
+      : `<div class="card empty"><div class="big">🗒️</div>
       <div class="msg">Add reminders for a specific time, or pin permanent notes here.</div></div>`;
     return;
   }
